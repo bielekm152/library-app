@@ -161,11 +161,10 @@ class BookManagement(Frame):
             return
 
         if book.borrow_book(self.controller.user.id):
-            self.table.insert("", "end", values=(book.id, book.name, book.author, book.isbn, book.state, book.date, book.return_date))
+            self.delete_data_table()
+            self.update_data_table()
         else:
             messagebox.showinfo("Chyba", "Kniha je uz pozicana")
-        self.delete_data_table()
-        self.update_data_table()
 
     # Spracuje kliknutie na tlačidlo Vrátiť. Načíta ID knihy zo vstupu,
     # pokúsi sa o vrátenie a aktualizuje tabuľku.
@@ -182,11 +181,11 @@ class BookManagement(Frame):
             return
 
         if book.return_book(self.controller.user.id):
-            self.table.insert("", "end", values=(book.id, book.name, book.author, book.isbn, book.state, book.date, book.return_date))
+            self.delete_data_table()
+            self.update_data_table()
         else:
             messagebox.showinfo("Chyba", "Kniha nie je pozicana alebo ju nemate pozicanu vy")
-        self.delete_data_table()
-        self.update_data_table()
+        
 
     def delete_clicked(self):
         book_id = self.b_input.get().strip()
