@@ -1,0 +1,49 @@
+id,name,author,isbn,state,date,user,return_date
+1,Harry Potter a Kameň mudrcov,J.K. Rowling,978-0-7475-3269-9,požičané,31-03-2026,5,30-04-2026
+2,Pán prsteňov: Spoločenstvo prsteňa,J.R.R. Tolkien,978-0-261-10235-4,požičané,02-10-2025,3,02-11-2025
+3,Hobit,J.R.R. Tolkien,978-0-261-10221-7,dostupné,-,-,-
+4,Anna Karenina,Lev Tolstoj,978-0-14-044792-3,požičané,05-10-2025,1,05-11-2025
+5,1984,George Orwell,978-0-452-28423-4,požičané,31-03-2026,5,30-04-2026
+6,Veľký Gatsby,F. Scott Fitzgerald,978-0-7432-7356-5,požičané,08-10-2025,2,08-11-2025
+7,Sto rokov samoty,Gabriel García Márquez,978-0-06-088328-7,požičané,10-10-2024,0,10-11-2024
+8,Zločin a trest,Fjodor Dostojevský,978-0-14-044913-2,požičané,11-10-2025,4,11-11-2025
+9,Hlava XXII,Joseph Heller,978-0-684-83339-5,dostupné,-,-,-
+11,Kronika vtáčika na kľúčik,Haruki Murakami,978-0-679-75053-1,dostupné,-,-,-
+12,Temná veža: Pištoľník,Stephen King,978-0-7432-5678-5,požičané,04-10-2025,2,04-11-2025
+13,Hra o tróny,George R.R. Martin,978-0-553-57340-3,dostupné,-,-,-
+14,Staré dobré časy,Jozef Gregor-Tajovský,978-80-220-0123-4,požičané,07-10-2025,3,07-11-2025
+15,"Muži, ktorí nenávidia ženy",Stieg Larsson,978-80-551-2374-5,dostupné,-,-,-
+16,"Dievča, ktoré sa hralo s ohňom",Stieg Larsson,978-80-551-2375-2,požičané,10-10-2025,4,10-11-2025
+17,Vojna s mlokmi,Karel Čapek,978-0-8101-6024-9,dostupné,-,-,-
+18,Dobré znamenia,Terry Pratchett a Neil Gaiman,978-0-06-085397-6,požičané,03-10-2025,1,03-11-2025
+19,Americkí bohovia,Neil Gaiman,978-0-06-055823-2,dostupné,-,-,-
+21,An American Tragedy,Theodore Dreiser,978-0-14-039024-0,dostupné,-,-,-
+22,The Call of the Wild,Jack London,978-0-14-243723-4,požičané,09-10-2025,3,09-11-2025
+23,The Shining,Stephen King,978-0-385-12167-5,dostupné,-,-,-
+24,It,Stephen King,978-0-670-81302-5,požičané,12-10-2025,4,12-11-2025
+26,Misery,Stephen King,978-0-670-81364-3,požičané,02-10-2025,1,02-11-2025
+28,Pet Sematary,Stephen King,978-0-385-18244-6,požičané,05-10-2025,0,05-11-2025
+29,Carrie,Stephen King,978-0-385-08695-0,dostupné,-,-,-
+30,Doctor Sleep,Stephen King,978-1-4767-2765-3,požičané,08-10-2025,3,08-11-2025
+31,The Girl with the Dragon Tattoo,Stieg Larsson,978-0-307-47347-2,dostupné,-,-,-
+32,Gone Girl,Gillian Flynn,978-0-307-58836-4,požičané,11-10-2025,4,11-11-2025
+33,The Silent Patient,Alex Michaelides,978-1-250-30169-7,dostupné,-,-,-
+34,The Guest List,Lucy Foley,978-0-06-291484-9,požičané,01-10-2025,1,01-11-2025
+35,The Hunting Party,Lucy Foley,978-0-06-285515-8,dostupné,-,-,-
+36,The Sanatorium,Sarah Pearse,978-0-593-18615-7,požičané,04-10-2025,2,04-11-2025
+37,The Turn of the Key,Ruth Ware,978-1-5011-8135-9,dostupné,-,-,-
+38,The Woman in Cabin 10,Ruth Ware,978-1-5011-6082-8,požičané,07-10-2025,3,07-11-2025
+39,Then She Was Gone,Lisa Jewell,978-1-5011-7895-3,dostupné,-,-,-
+40,The Last Thing He Told Me,Laura Dave,978-1-5011-9485-4,požičané,10-10-2025,4,10-11-2025
+41,Little Fires Everywhere,Celeste Ng,978-0-7352-1734-8,dostupné,-,-,-
+42,Big Little Lies,Liane Moriarty,978-0-399-16706-4,požičané,03-10-2025,0,03-11-2025
+43,Nine Perfect Strangers,Liane Moriarty,978-0-7352-1699-0,dostupné,-,-,-
+44,Truly Madly Guilty,Liane Moriarty,978-0-7352-1698-3,požičané,06-10-2025,2,06-11-2025
+45,The Husband's Secret,Liane Moriarty,978-0-399-16078-2,dostupné,-,-,-
+46,What Alice Forgot,Liane Moriarty,978-0-425-24481-1,požičané,09-10-2025,3,09-11-2025
+47,The Last Anniversary,Liane Moriarty,978-0-06-208945-5,dostupné,-,-,-
+48,Three Wishes,Liane Moriarty,978-0-06-208946-2,požičané,12-10-2025,4,12-11-2025
+49,The Hypnotist's Love Story,Liane Moriarty,978-0-399-16075-1,dostupné,-,-,-
+50,The Secret Keeper,Kate Morton,978-1-4516-7671-2,požičané,02-10-2025,1,02-11-2025
+51,ABC,ABC,448948984989,dostupné,-,-,-
+52,aa,aa,aa,dostupné,-,-,-
