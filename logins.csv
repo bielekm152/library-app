@@ -1,6 +1,5 @@
 id,email,password,name,role
 0,a,a,MK MK1,admin
-1,u,u,Alex Novak,user
 2,user002@library.local,pass002,Mia Horak,user
 4,user004@library.local,pass004,Sara Urban,user
 5,user005@library.local,pass005,David Kral,user
@@ -68,3 +67,4 @@ id,email,password,name,role
 68,user068@library.local,pass068,Tereza Ivancik,user
 69,user069@library.local,pass069,Radoslav Baca,user
 70,user070@library.local,pass070,Bianka Salaj,user
+71,bb@bb.com,a,Jajo Jajo,user
