@@ -1,8 +1,8 @@
 import pandas
 
-class User():
+class User:
     def __init__(self):
-        self.id = None
+        self.u_id = None
         self.email = None
         self.password = None
         self.name = None
@@ -22,14 +22,14 @@ class User():
         filtered_data = data[mask]
 
         if not filtered_data.empty:
-            self.id = str(filtered_data['id'].iloc[0])
+            self.u_id = str(filtered_data['id'].iloc[0])
             self.email = str(filtered_data['email'].iloc[0])
             self.password = str(filtered_data['password'].iloc[0])
             self.name = str(filtered_data['name'].iloc[0])
             self.role = str(filtered_data['role'].iloc[0])
             return True
         else:
-            self.id = None
+            self.u_id = None
             self.email = None
             self.password = None
             self.name = None
