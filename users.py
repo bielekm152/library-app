@@ -1,5 +1,7 @@
 import pandas
 
+LOGINS_DTYPE = {'id': str, 'email': str, 'password': str, 'name': str, 'role': str}
+
 class User:
     def __init__(self):
         self.u_id = None
@@ -8,8 +10,12 @@ class User:
         self.name = None
         self.role = None
 
+    @staticmethod
+    def load_users_data():
+        return pandas.read_csv("logins.csv", dtype=LOGINS_DTYPE)
+
     def authenticate(self, username, password):
-        data = pandas.read_csv("logins.csv", dtype={'email': str, 'password': str}) # Definujte typ stlpcov pri nacitani
+        data = User.load_users_data() # Definujte typ stlpcov pri nacitani
 
         # Odstráňte medzery z emailu a hesla v DataFrame
         data['email'] = data['email'].str.strip()
@@ -36,8 +42,9 @@ class User:
             self.role = None
             return False
 
-    def create_user(self, email, password, name, role):
-        data = pandas.read_csv("logins.csv", dtype={'id': str, 'email': str, 'password': str, 'name': str, 'role': str})
+    @staticmethod
+    def create_user(email, password, name, role):
+        data = User.load_users_data()
 
         email = str(email).strip()
         password = str(password).strip()

@@ -1,9 +1,11 @@
 from datetime import datetime
 import pandas
 
-class Book():
-    def __init__(self, id=None):
-        self.id = id
+BOOKS_DTYPE = {'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str}
+
+class Book:
+    def __init__(self, book_id=None):
+        self.id = book_id
         self.author = None
         self.isbn = None
         self.name = None
@@ -14,8 +16,12 @@ class Book():
         if self.id is not None:
             self.define_book()
 
+    @staticmethod
+    def load_books_data():
+        return pandas.read_csv("books.csv", dtype=BOOKS_DTYPE)
+
     def define_book(self):
-        data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
+        data = Book.load_books_data()
 
         data['id'] = data['id'].str.strip()
 
@@ -31,16 +37,16 @@ class Book():
             self.user = str(filtered_data['user'].iloc[0])
             self.return_date = str(filtered_data['return_date'].iloc[0])
 
-    def borrow_book(self, id):
+    def borrow_book(self, user_id):
         if self.state == 0:
             now = datetime.now()
-            data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
+            data = Book.load_books_data()
             data['id'] = data['id'].str.strip()
             mask = (data['id'] == str(self.id))
 
             data.loc[mask, 'state'] = 1
             data.loc[mask, 'date'] = now.strftime('%d-%m-%Y')
-            data.loc[mask, 'user'] = id
+            data.loc[mask, 'user'] = user_id
             data.loc[mask, 'return_date'] = (now + pandas.Timedelta(days=30)).strftime('%d-%m-%Y')   
 
             data.to_csv("books.csv", index=False)
@@ -48,12 +54,12 @@ class Book():
             self.date = now.strftime('%d-%m-%Y')
             self.return_date = (now + pandas.Timedelta(days=30)).strftime('%d-%m-%Y')
             return True
-        elif self.state == 1:
+        else:
             return False
         
     def return_book(self, user):
         if self.state == 1 and self.user == user:
-            data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
+            data = Book.load_books_data()
             data['id'] = data['id'].str.strip()
             mask = (data['id'] == str(self.id))
 
@@ -68,18 +74,18 @@ class Book():
             self.user = '-'
             self.return_date = '-'
             return True
-        elif self.state == 0:
+        else:
             return False
 
     def delete_book(self):
-        data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
+        data = Book.load_books_data()
         data['id'] = data['id'].str.strip()
         data = data[data['id'] != str(self.id)]
         data.to_csv("books.csv", index=False)
 
     @staticmethod
     def add_book(name, author, isbn):
-        data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
+        data = Book.load_books_data()
         data['id'] = data['id'].str.strip()
         new_id = str(data['id'].astype(int).max() + 1)
         new_book = {

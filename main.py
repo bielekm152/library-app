@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import messagebox, ttk
 
-import pandas
 from users import User
 from books import Book
 
@@ -70,6 +69,9 @@ class BookManagement(Frame):
         self.user_label = Label(self, text=f"User {self.controller.user.email} je prihlaseny ako {self.controller.user.role}", font=("Arial", 12, "bold"))
         self.user_label.grid(column=0, row=0)
         self.user_label.config(padx=20, pady=20)
+
+        self._setup_books_table()
+        self._setup_filter_controls()
         self.display_books_table()
 
     @staticmethod
@@ -88,17 +90,7 @@ class BookManagement(Frame):
     
 
 
-    # Vytvorí tabuľku kníh a voliteľne ju vyfiltruje.
-    # Ak sú filter aj filter_value None, zobrazí všetky knihy.
-    # Podporované filtre: name, author, isbn, state.
-    def display_books_table(self, filter=None, filter_value=None):
-        if hasattr(self, 'table') and self.table.winfo_exists():
-            self.table.destroy()
-
-        # Vytvorí filter buttons ak ešte neexistujú
-
-        data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
-
+    def _setup_books_table(self):
         self.table = ttk.Treeview(self)
         self.table['columns'] = ('ID', 'Name', 'Author', 'ISBN', 'State', 'Borrow date', 'Return date')
         self.table.column('ID', width=60)
@@ -129,18 +121,69 @@ class BookManagement(Frame):
         self.grid_columnconfigure(0, weight=1)
         self.table.tag_configure('borrowedbyme', foreground='darkgreen')
 
-        column_map = {
-            "name": "name",
-            "author": "author",
-            "isbn": "isbn",
-            "state": "state",
-            "user": "user"
-        }
+    def _setup_filter_controls(self):
+        filter_buttons_frame = Frame(self)
+        filter_buttons_frame.grid(column=0, row=2, pady=10, sticky="w")
 
-        filtered_data = self.apply_filters(data, filter, filter_value, column_map, exact_match_columns={"user"})
+        self.available_button = Button(filter_buttons_frame, text="Dostupné knihy", command=lambda: self.display_books_table("state", "0"))
+        self.available_button.grid(row=0, column=0, padx=5)
+
+        self.unavailable_button = Button(filter_buttons_frame, text="Požicané knihy", command=lambda: self.display_books_table("state", "1"))
+        self.unavailable_button.grid(row=0, column=1, padx=5)
+
+        self.all_books_button = Button(filter_buttons_frame, text="Všetky knihy", command=lambda: self.display_books_table())
+        self.all_books_button.grid(row=0, column=2, padx=5)
+
+        self.my_books_button = Button(filter_buttons_frame, text="Zobraz moje knihy", command=lambda: self.display_books_table("user", self.controller.user.u_id))
+        self.my_books_button.grid(row=0, column=3, padx=5)
+
+        self.book_label = Label(filter_buttons_frame, text="Zadaj ID knihy", font=("Arial", 10))
+        self.book_label.grid(row=1, column=0, padx=5)
+
+        self.b_input = Entry(filter_buttons_frame, width=20)
+        self.b_input.grid(row=1, column=1, padx=5)
+
+        self.borrow_button = Button(filter_buttons_frame, text="Pozicat", command=self.borrow_clicked)
+        self.borrow_button.grid(row=1, column=2, padx=5)
+
+        self.return_button = Button(filter_buttons_frame, text="Vratit", command=self.return_clicked)
+        self.return_button.grid(row=1, column=3, padx=5)
+
+        self.book_label1 = Label(filter_buttons_frame, text="Filtruj knihy podľa názvu", font=("Arial", 10))
+        self.book_label1.grid(row=2, column=0, padx=5)
+
+        self.name_input = Entry(filter_buttons_frame, width=20)
+        self.name_input.grid(row=2, column=1, padx=5)
+
+        self.searchname_button = Button(filter_buttons_frame, text="Vyhladaj", command=lambda: self.display_books_table("name", self.name_input.get()))
+        self.searchname_button.grid(row=2, column=2, padx=5)
+
+        self.book_label3 = Label(filter_buttons_frame, text="Filtruj knihy podľa ISBN", font=("Arial", 10))
+        self.book_label3.grid(row=3, column=0, padx=5)
+
+        self.isbn_input = Entry(filter_buttons_frame, width=20)
+        self.isbn_input.grid(row=3, column=1, padx=5)
+
+        self.searchisbn_button = Button(filter_buttons_frame, text="Vyhladaj", command=lambda: self.display_books_table("isbn", self.isbn_input.get()))
+        self.searchisbn_button.grid(row=3, column=2, padx=5)
+
+        self.book_label2 = Label(filter_buttons_frame, text="Filtruj knihy podľa autora", font=("Arial", 10))
+        self.book_label2.grid(row=4, column=0, padx=5)
+
+        self.author_input = Entry(filter_buttons_frame, width=20)
+        self.author_input.grid(row=4, column=1, padx=5)
+
+        self.searchauthor_button = Button(filter_buttons_frame, text="Vyhladaj", command=lambda: self.display_books_table("author", self.author_input.get()))
+        self.searchauthor_button.grid(row=4, column=2, padx=5)
+
+        self.logout_button = Button(self, text="Odhlasit", command=self.controller.logout)
+        self.logout_button.grid(column=0, row=99, pady=10, sticky="w")
+
+    def _render_books_table_rows(self, data):
+        self.delete_data_table()
 
         tags = []
-        for row_index, (_, row) in enumerate(filtered_data.iterrows()):
+        for row_index, (_, row) in enumerate(data.iterrows()):
             if self.controller.user.u_id == row["user"]:
                 tags.append('borrowedbyme')
             if row_index % 2 == 0:
@@ -152,65 +195,22 @@ class BookManagement(Frame):
             self.table.insert("", "end", values=(row["id"], row["name"], row["author"], row["isbn"], state_display, row["date"], row["return_date"]), tags=tags)
             tags.clear()
 
-        if not hasattr(self, 'filter_buttons_created'):
-            filter_buttons_frame = Frame(self)
-            filter_buttons_frame.grid(column=0, row=2, pady=10, sticky="w")
+    # Vytvorí tabuľku kníh a voliteľne ju vyfiltruje.
+    # Ak sú filter aj filter_value None, zobrazí všetky knihy.
+    # Podporované filtre: name, author, isbn, state.
+    def display_books_table(self, filter=None, filter_value=None):
+        data = Book.load_books_data()
 
-            self.available_button = Button(filter_buttons_frame, text="Dostupné knihy", command=lambda: self.display_books_table("state", "0"))
-            self.available_button.grid(row=0, column=0, padx=5)
+        column_map = {
+            "name": "name",
+            "author": "author",
+            "isbn": "isbn",
+            "state": "state",
+            "user": "user"
+        }
 
-            self.unavailable_button = Button(filter_buttons_frame, text="Požicané knihy", command=lambda: self.display_books_table("state", "1"))
-            self.unavailable_button.grid(row=0, column=1, padx=5)
-
-            self.all_books_button = Button(filter_buttons_frame, text="Všetky knihy", command=lambda: self.display_books_table())
-            self.all_books_button.grid(row=0, column=2, padx=5)
-
-            self.my_books_button = Button(filter_buttons_frame, text="Zobraz moje knihy", command=lambda: self.display_books_table("user", self.controller.user.u_id))
-            self.my_books_button.grid(row=0, column=3, padx=5)
-
-            self.book_label = Label(filter_buttons_frame, text="Zadaj ID knihy", font=("Arial", 10))
-            self.book_label.grid(row=1, column=0, padx=5)
-
-            self.b_input = Entry(filter_buttons_frame, width=20)
-            self.b_input.grid(row=1, column=1, padx=5)
-
-            self.borrow_button = Button(filter_buttons_frame, text="Pozicat", command=self.borrow_clicked)
-            self.borrow_button.grid(row=1, column=2, padx=5)
-
-            self.return_button = Button(filter_buttons_frame, text="Vratit", command=self.return_clicked)
-            self.return_button.grid(row=1, column=3, padx=5)
-
-            self.book_label1 = Label(filter_buttons_frame, text="Filtruj knihy podľa názvu", font=("Arial", 10))
-            self.book_label1.grid(row=2, column=0, padx=5)
-
-            self.name_input = Entry(filter_buttons_frame, width=20)
-            self.name_input.grid(row=2, column=1, padx=5)
-
-            self.searchname_button = Button(filter_buttons_frame, text="Vyhladaj", command=lambda: self.display_books_table("name",self.name_input.get()))
-            self.searchname_button.grid(row=2, column=2, padx=5)
-
-            self.book_label3 = Label(filter_buttons_frame, text="Filtruj knihy podľa ISBN", font=("Arial", 10))
-            self.book_label3.grid(row=3, column=0, padx=5)
-
-            self.isbn_input = Entry(filter_buttons_frame, width=20)
-            self.isbn_input.grid(row=3, column=1, padx=5)
-
-            self.searchisbn_button = Button(filter_buttons_frame, text="Vyhladaj", command=lambda: self.display_books_table("isbn",self.isbn_input.get()))
-            self.searchisbn_button.grid(row=3, column=2, padx=5)
-
-            self.book_label2 = Label(filter_buttons_frame, text="Filtruj knihy podľa autora", font=("Arial", 10))
-            self.book_label2.grid(row=4, column=0, padx=5)
-
-            self.author_input = Entry(filter_buttons_frame, width=20)
-            self.author_input.grid(row=4, column=1, padx=5)
-
-            self.searchauthor_button = Button(filter_buttons_frame, text="Vyhladaj", command=lambda: self.display_books_table("author",self.author_input.get()))
-            self.searchauthor_button.grid(row=4, column=2, padx=5)
-
-            self.logout_button = Button(self, text="Odhlasit", command=self.controller.logout)
-            self.logout_button.grid(column=0, row=99, pady=10, sticky="w")
-            
-            self.filter_buttons_created = True
+        filtered_data = self.apply_filters(data, filter, filter_value, column_map, exact_match_columns={"user"})
+        self._render_books_table_rows(filtered_data)
 
     # Spracuje kliknutie na tlačidlo Požičať. Načíta ID knihy zo vstupu,
     # pokúsi sa o požičanie a aktualizuje tabuľku.
@@ -279,7 +279,7 @@ class BookManagement(Frame):
             messagebox.showerror("Chyba", "Vypln nazov, autora aj ISBN")
             return
 
-        data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
+        data = Book.load_books_data()
         existing_isbn = data['isbn'].astype(str).str.strip()
 
         if isbn in existing_isbn.values:
@@ -295,21 +295,7 @@ class BookManagement(Frame):
     # Načíta dáta z books.csv a naplní tabuľku riadkami. Knihy požičané
     # aktuálnym používateľom sú zvýraznené zelenou farbou.
     def update_data_table(self):
-        data = pandas.read_csv("books.csv", dtype={'id': str, 'name': str, 'author': str, 'isbn': str, 'state': int, 'date': str, 'user': str, 'return_date': str})
-        data.values.tolist()
-
-        tags = []
-        for index, row in data.iterrows():
-            if self.controller.user.u_id == row["user"]:
-                tags.append('borrowedbyme')
-            state_display = "dostupné" if row["state"] == 0 else "požičané"
-            if index % 2 == 0: 
-                tags.append('evenrow')
-                self.table.insert("", "end", values=(row["id"], row["name"], row["author"], row["isbn"], state_display, row["date"], row["return_date"]), tags=tags)
-            else:
-                tags.append('oddrow')
-                self.table.insert("", "end", values=(row["id"], row["name"], row["author"], row["isbn"], state_display, row["date"], row["return_date"]), tags=tags)
-            tags.clear()
+        self.display_books_table()
 
     # Vymaže všetky riadky z tabuľky kníh.
     def delete_data_table(self):
@@ -466,7 +452,7 @@ class UserManagementPage(Frame):
             messagebox.showerror("Chyba", "Zadaj ID usera")
             return
 
-        data = pandas.read_csv("logins.csv", dtype={'id': str, 'email': str, 'password': str, 'name': str, 'role': str})
+        data = User.load_users_data()
         data['id'] = data['id'].str.strip()
 
         if user_id not in data['id'].values:
@@ -482,7 +468,7 @@ class UserManagementPage(Frame):
         self.controller.show_page(UserManagementPage)
 
     def show_user_table(self, filter_name=None, filter_value=None):
-        data = pandas.read_csv("logins.csv", dtype={'email': str, 'password': str, 'name': str, 'role': str})
+        data = User.load_users_data()
 
         self.label = Label(self, text=f"Admin User Management ({self.controller.user.email})", font=("Arial", 24, "bold"))
         self.label.grid(column=0, row=0)
