@@ -322,11 +322,11 @@ class BookManagement(Frame):
 
 
     # Displays books table and optionally applies filtering.
-    # If filter and filter_value are None, all books are shown.
+    # If filter_name and filter_value are None, all books are shown.
     # Supported filters: name, author, isbn, state, category, user.
-    # Inputs: filter (str|None), filter_value (str|None).
+    # Inputs: filter_name (str|None), filter_value (str|None).
     # Returns: None.
-    def display_books_table(self, filter: str | None = None, filter_value: str | None = None) -> None:
+    def display_books_table(self, filter_name: str | None = None, filter_value: str | None = None) -> None:
         data = Book.load_books_data()
 
         column_map = {
@@ -338,9 +338,9 @@ class BookManagement(Frame):
             "user": "user"
         }
 
-        filtered_data = self.apply_filters(data, filter, filter_value, column_map, exact_match_columns={"user"})
+        filtered_data = self.apply_filters(data, filter_name, filter_value, column_map, exact_match_columns={"user"})
         self._render_books_table_rows(filtered_data)
-        logger.info("Books table displayed: rows=%s filter=%s", len(filtered_data), filter)
+        logger.info("Books table displayed: rows=%s filter=%s", len(filtered_data), filter_name)
 
     # Handles click on Borrow button, borrows selected book and refreshes table.
     # Inputs: no inputs (reads value from self.b_input).
