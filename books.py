@@ -81,7 +81,7 @@ class Book:
 
         data['id'] = data['id'].str.strip()
 
-        mask = (data['id'] == str(self.id))
+        mask = data['id'] == str(self.id)
         filtered_data = data[mask]
 
         if not filtered_data.empty:
@@ -105,7 +105,7 @@ class Book:
             now = datetime.now()
             data = Book.load_books_data()
             data['id'] = data['id'].str.strip()
-            mask = (data['id'] == str(self.id))
+            mask = data['id'] == str(self.id)
 
             data.loc[mask, 'state'] = 1
             data.loc[mask, 'date'] = now.strftime('%d-%m-%Y')
@@ -129,7 +129,7 @@ class Book:
         if self.state and self.user == user:
             data = Book.load_books_data()
             data['id'] = data['id'].str.strip()
-            mask = (data['id'] == str(self.id))
+            mask = data['id'] == str(self.id)
 
             data.loc[mask, 'state'] = 0
             data.loc[mask, 'date'] = '-'
@@ -164,7 +164,7 @@ class Book:
 
         data = Book.load_books_data()
         data['id'] = data['id'].str.strip()
-        mask = (data['id'] == str(self.id))
+        mask = data['id'] == str(self.id)
         data.loc[mask, 'return_date'] = new_due.strftime('%d-%m-%Y')
         data.to_csv("books.csv", index=False)
 

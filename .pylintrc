@@ -12,9 +12,7 @@ disable=
     too-many-instance-attributes,
     too-many-ancestors,
     unnecessary-lambda,
-    redefined-builtin,
     wrong-import-order,
-    superfluous-parens,
     no-else-return
 
 [FORMAT]
