@@ -1,0 +1,27 @@
+[MASTER]
+ignore=.venv,__pycache__
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    wildcard-import,
+    unused-wildcard-import,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    too-many-ancestors,
+    unnecessary-lambda,
+    redefined-builtin,
+    wrong-import-order,
+    superfluous-parens,
+    no-else-return
+
+[FORMAT]
+max-line-length=120
+
+[DESIGN]
+max-args=7
+
+[TYPECHECK]
+generated-members=pandas.*

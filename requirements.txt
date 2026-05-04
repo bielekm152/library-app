@@ -1,1 +1,4 @@
 pandas>=2.0.0
+mypy>=1.15.0
+pylint>=3.3.0
+pandas-stubs>=2.2.0
