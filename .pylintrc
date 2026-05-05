@@ -3,17 +3,11 @@ ignore=.venv,__pycache__
 
 [MESSAGES CONTROL]
 disable=
-    missing-module-docstring,
-    missing-class-docstring,
-    missing-function-docstring,
-    wildcard-import,
-    unused-wildcard-import,
     too-few-public-methods,
     too-many-instance-attributes,
     too-many-ancestors,
     unnecessary-lambda,
-    wrong-import-order,
-    no-else-return
+    logging-fstring-interpolation,
 
 [FORMAT]
 max-line-length=120
