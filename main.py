@@ -1,10 +1,9 @@
-# Module main.py contains the Tkinter UI application: login, registration,
-# book management, admin features, and user management.
+"""Tkinter UI layer for login, registration, book management, and admin pages."""
+
 from __future__ import annotations
 
 import logging
-from tkinter import *
-from tkinter import messagebox, ttk
+from tkinter import END, NW, W, Button, Entry, Frame, Label, Tk, Widget, messagebox, ttk
 from typing import Any, Protocol, cast
 
 from users import User
@@ -16,15 +15,19 @@ logger = logging.getLogger(__name__)
 
 
 class PageFactory(Protocol):
+    """Callable protocol for page classes managed by the application router."""
+
     def __call__(self, parent: Widget, controller: Aplikacia) -> Frame: ...
 
 # Login screen. Displays form fields for email and password.
 class LoginPage(Frame):
+    """Login page with email/password fields and navigation controls."""
 
     # Initializes login form with labels, inputs, and action buttons.
     # Inputs: parent (tk widget), controller (Aplikacia).
     # Returns: None.
     def __init__(self, parent: Widget, controller: Aplikacia) -> None:
+        """Initialize login page widgets and actions."""
         Frame.__init__(self, parent)
         self.controller = controller
 
@@ -67,19 +70,22 @@ class LoginPage(Frame):
     # Inputs: user (str), passw (str).
     # Returns: None.
     def button_login(self, user: str, passw: str) -> None:
+        """Authenticate user and route to the role-specific page."""
         if self.controller.user.authenticate(user, passw):
-            logger.info("User authenticated successfully: email=%s role=%s", user, self.controller.user.role)
+            logger.info(f"User authenticated successfully: email={user} role={self.controller.user.role}")
             if str(self.controller.user.role).strip() == "admin":
                 self.controller.show_page(AdminPage)
             elif str(self.controller.user.role).strip() == "user":
                 self.controller.show_page(BookManagement)
         else:
             messagebox.showerror("Prihlasenie", "Nespravne meno alebo heslo")
-            logger.warning("Failed login attempt for email=%s", user)
+            logger.warning(f"Failed login attempt for email={user}")
 
 
 # Book management - shared class for user/admin book table and borrowing actions.
 class BookManagement(Frame):
+    """Shared page for listing and managing books for users and admins."""
+
     # Class for book operations: borrowing, returning, and table rendering.
     bd_input: Entry
     bn_input: Entry
@@ -91,6 +97,7 @@ class BookManagement(Frame):
     # Inputs: parent (tk widget), controller (Aplikacia).
     # Returns: None.
     def __init__(self, parent: Widget, controller: Aplikacia) -> None:
+        """Initialize shared book management UI and load table data."""
         Frame.__init__(self, parent)
         self.controller = controller
 
@@ -102,9 +109,8 @@ class BookManagement(Frame):
         self.user_label.grid(column=0, row=0)
         self.user_label.config(padx=20, pady=20)
         logger.info(
-            "BookManagement initialized for email=%s role=%s",
-            self.controller.user.email,
-            self.controller.user.role,
+            f"BookManagement initialized for email={self.controller.user.email} "
+            f"role={self.controller.user.role}"
         )
 
         self._setup_books_table()
@@ -123,13 +129,14 @@ class BookManagement(Frame):
         column_map: dict[str, str],
         exact_match_columns: set[str] | None = None,
     ) -> Any:
+        """Apply optional exact or contains-based filtering on provided tabular data."""
         normalized_filter = None if filter_name is None else str(filter_name).strip().lower()
         normalized_value = None if filter_value is None else str(filter_value).strip().lower()
         exact_match_columns = set() if exact_match_columns is None else set(exact_match_columns)
 
         if normalized_filter in column_map and normalized_value is not None:
             column = column_map[normalized_filter]
-            logger.debug("Applying filter: column=%s value=%s", column, normalized_value)
+            logger.debug(f"Applying filter: column={column} value={normalized_value}")
             if column in exact_match_columns:
                 return data[data[column].astype(str).str.strip().str.lower() == normalized_value]
             return data[data[column].astype(str).str.strip().str.lower().str.contains(normalized_value, na=False)]
@@ -137,8 +144,9 @@ class BookManagement(Frame):
         return data
 
     def _require_user_id(self) -> str:
+        """Return authenticated user ID or raise when not available."""
         if self.controller.user.u_id is None:
-            logger.warning("User ID required for action but not found: email=%s", self.controller.user.email)
+            logger.warning(f"User ID required for action but not found: email={self.controller.user.email}")
             raise RuntimeError("User is not authenticated")
 
         return self.controller.user.u_id
@@ -147,6 +155,7 @@ class BookManagement(Frame):
     # Inputs: no inputs.
     # Returns: None.
     def _setup_books_table(self) -> None:
+        """Create and configure the Treeview used to display books."""
         self.table = ttk.Treeview(self)
         self.table['columns'] = (
             'ID',
@@ -193,6 +202,7 @@ class BookManagement(Frame):
     # Inputs: no inputs.
     # Returns: None.
     def _setup_filter_controls(self) -> None:
+        """Create filter controls and action buttons for book operations."""
         filter_buttons_frame = Frame(self)
         filter_buttons_frame.grid(column=0, row=2, pady=10, sticky="w")
 
@@ -291,6 +301,7 @@ class BookManagement(Frame):
     # Inputs: data (pandas.DataFrame).
     # Returns: None.
     def _render_books_table_rows(self, data: Any) -> None:
+        """Render filtered book rows into the table with alternating styles."""
         self.delete_data_table()
 
         tags = []
@@ -327,6 +338,7 @@ class BookManagement(Frame):
     # Inputs: filter_name (str|None), filter_value (str|None).
     # Returns: None.
     def display_books_table(self, filter_name: str | None = None, filter_value: str | None = None) -> None:
+        """Load books data, apply filters, and refresh table content."""
         data = Book.load_books_data()
 
         column_map = {
@@ -340,12 +352,13 @@ class BookManagement(Frame):
 
         filtered_data = self.apply_filters(data, filter_name, filter_value, column_map, exact_match_columns={"user"})
         self._render_books_table_rows(filtered_data)
-        logger.info("Books table displayed: rows=%s filter=%s", len(filtered_data), filter_name)
+        logger.info(f"Books table displayed: rows={len(filtered_data)} filter={filter_name}")
 
     # Handles click on Borrow button, borrows selected book and refreshes table.
     # Inputs: no inputs (reads value from self.b_input).
     # Returns: None.
     def borrow_clicked(self) -> None:
+        """Borrow selected book for current user and refresh table."""
         book_id = self.b_input.get().strip()
         if not book_id:
             messagebox.showerror("Chyba", "Zadaj ID knihy")
@@ -356,21 +369,21 @@ class BookManagement(Frame):
 
         if book.name is None:
             messagebox.showerror("Chyba", "Kniha s tymto ID neexistuje")
-            logger.warning("Borrow failed: book_id=%s does not exist", book_id)
+            logger.warning(f"Borrow failed: book_id={book_id} does not exist")
             return
 
         if book.borrow_book(self._require_user_id()):
-            self.delete_data_table()
             self.update_data_table()
-            logger.info("Book borrowed from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+            logger.info(f"Book borrowed from UI: book_id={book_id} email={self.controller.user.email}")
         else:
             messagebox.showinfo("Chyba", "Kniha je uz pozicana")
-            logger.warning("Borrow failed from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+            logger.warning(f"Borrow failed from UI: book_id={book_id} email={self.controller.user.email}")
 
     # Handles click on Return button, returns selected book and refreshes table.
     # Inputs: no inputs (reads value from self.b_input).
     # Returns: None.
     def return_clicked(self) -> None:
+        """Return selected book for current user and refresh table."""
         book_id = self.b_input.get().strip()
         if not book_id:
             messagebox.showerror("Chyba", "Zadaj ID knihy")
@@ -381,71 +394,71 @@ class BookManagement(Frame):
 
         if book.name is None:
             messagebox.showerror("Chyba", "Kniha s tymto ID neexistuje")
-            logger.warning("Return failed: book_id=%s does not exist", book_id)
+            logger.warning(f"Return failed: book_id={book_id} does not exist")
             return
 
         if book.return_book(self._require_user_id()):
-            self.delete_data_table()
             self.update_data_table()
-            logger.info("Book returned from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+            logger.info(f"Book returned from UI: book_id={book_id} email={self.controller.user.email}")
         else:
             messagebox.showinfo("Chyba", "Kniha nie je pozicana alebo ju nemate pozicanu vy")
-            logger.warning("Return failed from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+            logger.warning(f"Return failed from UI: book_id={book_id} email={self.controller.user.email}")
 
     # Handles click on Extend Borrowing button.
     # Inputs: no inputs (reads value from self.b_input).
     # Returns: None.
     def extend_clicked(self) -> None:
+        """Extend due date for selected borrowed book by default extension window."""
         book_id = self.b_input.get().strip()
         if not book_id:
             messagebox.showerror("Chyba", "Zadaj ID knihy")
-            logger.warning("Extend failed: missing book_id email=%s", self.controller.user.email)
+            logger.warning(f"Extend failed: missing book_id email={self.controller.user.email}")
             return
 
         book = Book(book_id)
 
         if book.name is None:
             messagebox.showerror("Chyba", "Kniha s tymto ID neexistuje")
-            logger.warning("Extend failed: book_id=%s does not exist email=%s", book_id, self.controller.user.email)
+            logger.warning(f"Extend failed: book_id={book_id} does not exist email={self.controller.user.email}")
             return
 
         if book.extend_borrowing(self._require_user_id()):
-            self.delete_data_table()
             self.update_data_table()
             messagebox.showinfo("Hotovo", "Doba pozicania bola predlzena o 14 dni")
-            logger.info("Borrowing extended from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+            logger.info(f"Borrowing extended from UI: book_id={book_id} email={self.controller.user.email}")
         else:
             messagebox.showinfo("Chyba", "Kniha nie je pozicana alebo ju nemate pozicanu vy")
-            logger.warning("Extend failed from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+            logger.warning(f"Extend failed from UI: book_id={book_id} email={self.controller.user.email}")
 
 
     # Handles click on Delete button and deletes a book by ID.
     # Inputs: no inputs (reads value from self.bd_input).
     # Returns: None.
     def delete_clicked(self) -> None:
+        """Delete selected book by ID and refresh table."""
         book_id = self.bd_input.get().strip()
         if not book_id:
             messagebox.showerror("Chyba", "Zadaj ID knihy")
-            logger.warning("Delete failed: missing book_id email=%s", self.controller.user.email)
+            logger.warning(f"Delete failed: missing book_id email={self.controller.user.email}")
             return
 
         book = Book(book_id)
 
         if book.name is None:
             messagebox.showerror("Chyba", "Kniha s tymto ID neexistuje")
-            logger.warning("Delete failed: book_id=%s does not exist email=%s", book_id, self.controller.user.email)
+            logger.warning(f"Delete failed: book_id={book_id} does not exist email={self.controller.user.email}")
             return
 
         book.delete_book()
-        self.delete_data_table()
         self.update_data_table()
-        logger.info("Book deleted from UI: book_id=%s email=%s", book_id, self.controller.user.email)
+        logger.info(f"Book deleted from UI: book_id={book_id} email={self.controller.user.email}")
         messagebox.showinfo("Hotovo", "Kniha bola vymazana")
 
     # Handles adding a new book after input validation.
     # Inputs: no inputs (reads values from form fields).
     # Returns: None.
     def add_clicked(self) -> None:
+        """Validate and add a new book, then refresh table."""
         name = self.bn_input.get().strip()
         author = self.ba_input.get().strip()
         isbn = self.bi_input.get().strip()
@@ -458,7 +471,7 @@ class BookManagement(Frame):
 
         if category not in Book.get_categories():
             messagebox.showerror("Chyba", "Vyber kategoriu zo zoznamu")
-            logger.warning("Add book failed: invalid category=%s", category)
+            logger.warning(f"Add book failed: invalid category={category}")
             return
 
         data = Book.load_books_data()
@@ -466,36 +479,40 @@ class BookManagement(Frame):
 
         if isbn in existing_isbn.values:
             messagebox.showerror("Chyba", "Kniha uz je v databaze")
-            logger.warning("Add book failed: duplicate isbn=%s", isbn)
+            logger.warning(f"Add book failed: duplicate isbn={isbn}")
             return
 
         Book.add_book(name, author, isbn, category)
 
-        self.delete_data_table()
         self.update_data_table()
-        logger.info("Book added from UI: name=%s isbn=%s category=%s", name, isbn, category)
+        logger.info(f"Book added from UI: name={name} isbn={isbn} category={category}")
         messagebox.showinfo("Hotovo", "Kniha bola pridana")
 
     # Refreshes current books table data.
     # Inputs: no inputs.
     # Returns: None.
     def update_data_table(self) -> None:
+        """Reload currently visible books table data."""
+        self.delete_data_table()
         self.display_books_table()
 
     # Deletes all rows from the books table.
     # Inputs: no inputs.
     # Returns: None.
     def delete_data_table(self) -> None:
+        """Clear all rows from the books table widget."""
         for line in self.table.get_children():
             self.table.delete(line)
 
 # Registration screen for new users.
 class RegPage(Frame):
+    """Registration page for creating a standard user account."""
 
     # Initializes the registration page.
     # Inputs: parent (tk widget), controller (Aplikacia).
     # Returns: None.
     def __init__(self, parent: Widget, controller: Aplikacia) -> None:
+        """Initialize registration form widgets and navigation controls."""
         Frame.__init__(self, parent)
         self.controller = controller
 
@@ -531,6 +548,7 @@ class RegPage(Frame):
     # Inputs: no inputs (reads values from registration form).
     # Returns: None.
     def register_clicked(self) -> None:
+        """Submit registration form and show success or error feedback."""
         name = self.name_input.get().strip()
         email = self.email_input.get().strip()
         password = self.password_input.get().strip()
@@ -542,19 +560,21 @@ class RegPage(Frame):
             self.name_input.delete(0, END)
             self.email_input.delete(0, END)
             self.password_input.delete(0, END)
-            logger.info("Registration succeeded: email=%s", email)
+            logger.info(f"Registration succeeded: email={email}")
             self.controller.show_page(LoginPage)
         else:
             messagebox.showerror("Chyba", msg)
-            logger.warning("Registration failed: email=%s reason=%s", email, msg)
+            logger.warning(f"Registration failed: email={email} reason={msg}")
 
 # AdminPage extends book management with admin actions (add/delete/users).
 class AdminPage(BookManagement):
+    """Admin-only extension of book management with add/delete/user controls."""
 
     # Initializes the admin page by extending BookManagement.
     # Inputs: parent (tk widget), controller (Aplikacia).
     # Returns: None.
     def __init__(self, parent: Widget, controller: Aplikacia) -> None:
+        """Initialize admin controls on top of shared book management UI."""
         super().__init__(parent, controller)
 
         # Admin control block.
@@ -606,14 +626,16 @@ class AdminPage(BookManagement):
 
         self.logout_button = Button(self, text="Odhlasit", command=self.controller.logout)
         self.logout_button.grid(row=99, column=0, pady=10, sticky="w")
-        logger.info("Admin page initialized for email=%s", self.controller.user.email)
+        logger.info(f"Admin page initialized for email={self.controller.user.email}")
 
 # UserManagementPage manages user list, filtering, and deletion.
 class UserManagementPage(Frame):
+    """Admin page for browsing, filtering, and deleting users."""
     # Initializes user management page.
     # Inputs: parent (tk widget), controller (Aplikacia).
     # Returns: None.
     def __init__(self, parent: Widget, controller: Aplikacia) -> None:
+        """Initialize user management table and action controls."""
         Frame.__init__(self, parent)
         self.controller = controller
 
@@ -679,6 +701,7 @@ class UserManagementPage(Frame):
     # Inputs: user_id (str|int).
     # Returns: None.
     def delete_clicked(self, user_id: str | int) -> None:
+        """Delete selected user by ID and reload management page."""
         user_id = str(user_id).strip()
         if not user_id:
             messagebox.showerror("Chyba", "Zadaj ID usera")
@@ -690,13 +713,13 @@ class UserManagementPage(Frame):
 
         if user_id not in data['id'].values:
             messagebox.showerror("Chyba", "User s tymto ID neexistuje")
-            logger.warning("User delete failed: user_id=%s not found", user_id)
+            logger.warning(f"User delete failed: user_id={user_id} not found")
             return
 
         data = data[data['id'] != str(user_id)]
         data.to_csv("logins.csv", index=False)
         messagebox.showinfo("Hotovo", "User bol vymazany")
-        logger.info("User deleted from UI: user_id=%s", user_id)
+        logger.info(f"User deleted from UI: user_id={user_id}")
         if UserManagementPage in self.controller.frames:
             self.controller.frames[UserManagementPage].destroy()
             del self.controller.frames[UserManagementPage]
@@ -706,6 +729,7 @@ class UserManagementPage(Frame):
     # Inputs: filter_name (str|None), filter_value (str|None).
     # Returns: None.
     def show_user_table(self, filter_name: str | None = None, filter_value: str | None = None) -> None:
+        """Render users table and apply optional filter by selected column."""
         data = User.load_users_data()
 
         self.label = Label(
@@ -749,7 +773,7 @@ class UserManagementPage(Frame):
             column_map,
             exact_match_columns={"id"}
         )
-        logger.info("User table displayed: rows=%s filter=%s", len(filtered_data), filter_name)
+        logger.info(f"User table displayed: rows={len(filtered_data)} filter={filter_name}")
 
         tags = []
         for row_index, (_, row) in enumerate(filtered_data.iterrows()):
@@ -770,11 +794,13 @@ class UserManagementPage(Frame):
 
 # Main application class. Handles page navigation and logged-in user state.
 class Aplikacia(Tk):
+    """Main Tk application container with page routing and user session state."""
 
     # Initializes the main window, title, size, and initial login page.
     # Inputs: *args, **kwargs (Tk arguments).
     # Returns: None.
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialize main window, shared state, and first page."""
         Tk.__init__(self, *args, **kwargs)
         self.title("Library App")
         self.geometry("1200x700")
@@ -793,21 +819,23 @@ class Aplikacia(Tk):
     # Inputs: page (Frame class).
     # Returns: None.
     def show_page(self, page: type[Frame]) -> None:
+        """Show requested page and lazily construct it on first access."""
         if page not in self.frames:
             frame = cast(PageFactory, page)(self.container, self)
             self.frames[page] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-            logger.debug("Page created: %s", page.__name__)
+            logger.debug(f"Page created: {page.__name__}")
 
         frame = self.frames[page]
         frame.tkraise()
-        logger.info("Page shown: %s", page.__name__)
+        logger.info(f"Page shown: {page.__name__}")
 
     # Logs out user, clears cached pages, and returns to LoginPage.
     # Inputs: no inputs.
     # Returns: None.
     def logout(self) -> None:
-        logger.info("Logout started: email=%s", self.user.email)
+        """Clear session state and navigate back to login page."""
+        logger.info(f"Logout started: email={self.user.email}")
         for page in list(self.frames.keys()):
             if page != LoginPage:
                 self.frames[page].destroy()
@@ -817,6 +845,7 @@ class Aplikacia(Tk):
         logger.info("Logout completed")
 
 
-setup_logging()
-app = Aplikacia()
-app.mainloop()
+if __name__ == "__main__":
+    setup_logging()
+    app = Aplikacia()
+    app.mainloop()

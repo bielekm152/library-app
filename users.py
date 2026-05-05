@@ -1,5 +1,5 @@
-# Module users.py handles user operations: loading, authentication,
-# and user registration into logins.csv.
+"""User domain model and persistence helpers for authentication and registration."""
+
 from __future__ import annotations
 
 import logging
@@ -20,10 +20,13 @@ LOGINS_DTYPE: Final[dict[str, type[str]]] = {
 
 # Class User represents the logged-in user and operations over user data.
 class User:
+    """Represents the currently authenticated user and user-related operations."""
+
     # Initializes an empty user state before login.
     # Inputs: no inputs.
     # Returns: None.
     def __init__(self) -> None:
+        """Initialize empty user state before authentication."""
         self.u_id: str | None = None
         self.email: str | None = None
         self.password: str | None = None
@@ -35,6 +38,7 @@ class User:
     # Inputs: no inputs.
     # Returns: pandas.DataFrame with users.
     def load_users_data() -> DataFrame:
+        """Load users from CSV with explicit dtypes."""
         logger.debug("Loading users data from logins.csv")
         return pandas.read_csv("logins.csv", dtype=cast(Any, LOGINS_DTYPE))
 
@@ -42,6 +46,7 @@ class User:
     # Inputs: username (str), password (str).
     # Returns: bool - True on successful authentication, otherwise False.
     def authenticate(self, username: str, password: str) -> bool:
+        """Authenticate user by email and password and update in-memory state."""
         data = User.load_users_data() # Load with explicit column types.
 
         # Trim leading/trailing spaces in email and password columns.
@@ -60,7 +65,7 @@ class User:
             self.password = str(filtered_data['password'].iloc[0])
             self.name = str(filtered_data['name'].iloc[0])
             self.role = str(filtered_data['role'].iloc[0])
-            logger.info("Authentication successful: user_id=%s email=%s role=%s", self.u_id, self.email, self.role)
+            logger.info(f"Authentication successful: user_id={self.u_id} email={self.email} role={self.role}")
             return True
 
         self.u_id = None
@@ -68,7 +73,7 @@ class User:
         self.password = None
         self.name = None
         self.role = None
-        logger.warning("Authentication failed for email=%s", username)
+        logger.warning(f"Authentication failed for email={username}")
         return False
 
     @staticmethod
@@ -76,6 +81,7 @@ class User:
     # Inputs: email (str), password (str), name (str), role (str).
     # Returns: tuple(bool, str) - operation status and UI message.
     def create_user(email: str, password: str, name: str, role: str) -> tuple[bool, str]:
+        """Create a new user record and persist it to CSV if validation passes."""
         data = User.load_users_data()
 
         email = str(email).strip()
@@ -91,7 +97,7 @@ class User:
         data['email'] = data['email'].astype(str).str.strip()
 
         if email in data['email'].values:
-            logger.warning("User registration failed: email already exists (%s)", email)
+            logger.warning(f"User registration failed: email already exists ({email})")
             return False, "Pouzivatel s tymto e-mailom uz existuje"
 
         new_id = str(data['id'].astype(int).max() + 1)
@@ -106,5 +112,5 @@ class User:
         ])
         data = pandas.concat([data, new_user], ignore_index=True)
         data.to_csv("logins.csv", index=False)
-        logger.info("User registered successfully: user_id=%s email=%s role=%s", new_id, email, role)
+        logger.info(f"User registered successfully: user_id={new_id} email={email} role={role}")
         return True, "Registracia bola uspesna"

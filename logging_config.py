@@ -1,3 +1,5 @@
+"""Centralized logging configuration for the library application."""
+
 import os
 import logging
 from logging.handlers import RotatingFileHandler
@@ -5,6 +7,7 @@ from pathlib import Path
 
 
 def setup_logging() -> None:
+    """Configure root logger with rotating file output and level from environment."""
     # Načítaj úroveň logovacieho z premenného prostredia LOG_LEVEL
     # Default je INFO, môžeš to zmeniť na: DEBUG, INFO, WARNING, ERROR, CRITICAL
     log_level_str = os.getenv('LOG_LEVEL', 'INFO').upper()
